@@ -1,0 +1,27 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#1A1C3D"/>
+      <stop offset="100%" stop-color="#0F1023"/>
+    </linearGradient>
+    <linearGradient id="a1" x1="8" y1="6" x2="16" y2="26" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#C4B5FD"/>
+      <stop offset="100%" stop-color="#7B61FF"/>
+    </linearGradient>
+    <linearGradient id="a2" x1="24" y1="6" x2="16" y2="26" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#7B61FF"/>
+      <stop offset="100%" stop-color="#6247E0"/>
+    </linearGradient>
+  </defs>
+  <rect width="32" height="32" rx="8" fill="url(#bg)"/>
+  <rect width="32" height="32" rx="8" fill="none" stroke="#2A2D57" stroke-width="1"/>
+  <!-- Left arc -->
+  <path d="M 14 7 C 5 7 3 12 3 16 C 3 20 5 25 14 25"
+    stroke="url(#a1)" stroke-width="2.8" stroke-linecap="round" fill="none"/>
+  <!-- Right arc -->
+  <path d="M 18 7 C 27 7 29 12 29 16 C 29 20 27 25 18 25"
+    stroke="url(#a2)" stroke-width="2.8" stroke-linecap="round" fill="none"/>
+  <!-- Dots -->
+  <circle cx="16" cy="7" r="2" fill="#9B8AFF"/>
+  <circle cx="16" cy="25" r="2" fill="#6247E0"/>
+</svg>

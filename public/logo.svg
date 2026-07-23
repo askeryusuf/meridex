@@ -1,0 +1,58 @@
+<svg width="400" height="400" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="400" y2="400" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#1A1C3D"/>
+      <stop offset="100%" stop-color="#0F1023"/>
+    </linearGradient>
+    <linearGradient id="arcGrad1" x1="120" y1="80" x2="280" y2="320" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#C4B5FD"/>
+      <stop offset="100%" stop-color="#7B61FF"/>
+    </linearGradient>
+    <linearGradient id="arcGrad2" x1="280" y1="80" x2="120" y2="320" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#7B61FF"/>
+      <stop offset="100%" stop-color="#6247E0"/>
+    </linearGradient>
+    <filter id="glow1" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="glow2" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="12" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="400" height="400" rx="88" fill="url(#bgGrad)"/>
+
+  <!-- Outer border -->
+  <rect x="2" y="2" width="396" height="396" rx="87" fill="none" stroke="#2A2D57" stroke-width="2.5"/>
+
+  <!-- Inner glow ring -->
+  <rect x="14" y="14" width="372" height="372" rx="76" fill="none" stroke="#7B61FF" stroke-width="1" opacity="0.25"/>
+
+  <!-- Background purple glow blob -->
+  <ellipse cx="200" cy="200" rx="130" ry="110" fill="rgba(123,97,255,0.06)"/>
+
+  <!-- Left arc -->
+  <path d="M 176 96 C 96 96 68 144 68 200 C 68 256 96 304 176 304"
+    stroke="url(#arcGrad1)" stroke-width="22" stroke-linecap="round" fill="none"
+    filter="url(#glow1)"/>
+
+  <!-- Right arc -->
+  <path d="M 224 96 C 304 96 332 144 332 200 C 332 256 304 304 224 304"
+    stroke="url(#arcGrad2)" stroke-width="22" stroke-linecap="round" fill="none"
+    filter="url(#glow1)"/>
+
+  <!-- Top dot with glow -->
+  <circle cx="200" cy="96" r="13" fill="#9B8AFF" filter="url(#glow2)"/>
+  <circle cx="200" cy="96" r="7" fill="#C4B5FD"/>
+
+  <!-- Bottom dot with glow -->
+  <circle cx="200" cy="304" r="13" fill="#6247E0" filter="url(#glow2)"/>
+  <circle cx="200" cy="304" r="7" fill="#7B61FF"/>
+
+  <!-- Subtle center vertical dashes -->
+  <line x1="200" y1="110" x2="200" y2="290"
+    stroke="#2A2D57" stroke-width="1.5" stroke-dasharray="6 8" opacity="0.5"/>
+</svg>
