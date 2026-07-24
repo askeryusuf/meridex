@@ -66,6 +66,11 @@ function TxCard({ tx, index }: { tx: TxWithDir; index: number }) {
         <span className="font-semibold text-sm" style={{ color: 'var(--text-primary)' }}>
           {isSwap ? 'Swap' : 'Send'}
         </span>
+        {isSwap && tx.token_pair && (
+          <span className="ml-1.5 text-xs font-mono" style={{ color: 'var(--text-secondary)' }}>
+            ({tx.token_pair})
+          </span>
+        )}
       </div>
 
       {/* Time */}

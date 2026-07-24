@@ -13,6 +13,7 @@ export type Transaction = {
   amount: number
   tx_hash: string
   type: 'send' | 'invoice' | 'gift' | 'payroll' | 'swap'
+  token_pair?: string | null   // e.g. "EURC→USDC" — only set for swaps
 }
 
 export async function saveTransaction(
@@ -20,13 +21,14 @@ export async function saveTransaction(
   recipient: string,
   amount: number,
   txHash: string,
-  type: Transaction['type']
+  type: Transaction['type'],
+  tokenPair?: string,
 ) {
   try {
     const res = await fetch('/api/save-transaction', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ sender, recipient, amount, txHash, type }),
+      body: JSON.stringify({ sender, recipient, amount, txHash, type, tokenPair }),
     })
     if (!res.ok) {
       const data = await res.json().catch(() => ({}))

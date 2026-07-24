@@ -159,7 +159,7 @@ export default function SwapPage() {
       const hash = (result as { txHash?: string })?.txHash ?? ''
       setTxHash(hash)
       if (!hash) console.warn('[swap] txHash is empty, saving without hash')
-      await saveTransaction(address, address, parseFloat(amountIn), hash, 'swap')
+      await saveTransaction(address, address, parseFloat(amountIn), hash, 'swap', `${tokenIn.symbol}→${tokenOut.symbol}`)
       // Force-refresh all balances immediately after swap
       queryClient.invalidateQueries()
       setAmountIn(''); setEstimate(null)
