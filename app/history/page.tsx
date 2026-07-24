@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo, useCallback } from 'react'
 import { useAccount } from 'wagmi'
 import AppLayout from '@/app/components/AppLayout'
-import { supabase, type Transaction } from '@/lib/supabase'
+import { type Transaction } from '@/lib/supabase'
 
 function timeAgo(dateStr: string) {
   const diff = Date.now() - new Date(dateStr).getTime()
@@ -136,10 +136,14 @@ export default function HistoryPage() {
     if (!address) return
     setLoading(true)
     async function load() {
-      const [{ data: sent }, { data: received }] = await Promise.all([
-        supabase.from('transactions').select('*').eq('sender_address', address!.toLowerCase()).order('created_at', { ascending: false }),
-        supabase.from('transactions').select('*').eq('recipient_address', address!.toLowerCase()).order('created_at', { ascending: false }),
-      ])
+      const res = await fetch(`/api/get-transactions?address=${address}`)
+      if (!res.ok) {
+        console.error('[history] API error:', res.status)
+        setLoading(false)
+        return
+      }
+      const { sent, received } = await res.json()
+      console.log('[history] sent:', sent?.length ?? 0, '| received:', received?.length ?? 0)
       const all: TxWithDir[] = [
         ...(sent     || []).map((t: Transaction) => ({ ...t, direction: 'out' as const })),
         ...(received || []).map((t: Transaction) => ({ ...t, direction: 'in'  as const })),
