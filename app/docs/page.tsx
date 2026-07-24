@@ -32,9 +32,27 @@ export default function DocsPage() {
           <p className="text-xs sm:text-sm" style={{ color: 'var(--text-secondary)' }}>Platform guide and reference</p>
         </div>
 
+        {/* ── Mobil section seçici ── */}
+        <div className="flex flex-wrap gap-2 mb-4 lg:hidden">
+          {sections.map((section) => (
+            <button
+              key={section.id}
+              onClick={() => setActiveSection(section.id)}
+              className="px-3 py-1.5 rounded-xl text-xs font-semibold transition-all"
+              style={
+                activeSection === section.id
+                  ? { background: 'var(--teal)', color: '#fff', border: '1px solid var(--teal)' }
+                  : { background: 'var(--bg-card)', color: 'var(--text-secondary)', border: '1px solid var(--border)' }
+              }
+            >
+              {section.title}
+            </button>
+          ))}
+        </div>
+
         <div className="flex gap-4" style={{ minHeight: '70vh' }}>
           {/* ── Content card ── */}
-          <div className="min-w-0" style={{ flex: '1 1 0%', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '0.75rem', padding: '1.5rem', overflowY: 'auto', maxHeight: 'calc(100vh - 160px)' }}>
+          <div className="min-w-0" style={{ flex: '1 1 0%', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '0.75rem', padding: '1.25rem', overflowY: 'auto', maxHeight: 'calc(100vh - 160px)' }}>
 
             <h2 className="text-lg font-bold mb-1" style={{ color: 'var(--text-heading)' }}>
               {sections.find((s) => s.id === activeSection)?.title}
@@ -73,8 +91,8 @@ export default function DocsPage() {
                   Meridex follows a client-first architecture. All blockchain interactions happen directly from the user's browser via their connected wallet — there is no backend server holding private keys or proxying transactions.
                 </p>
                 <h3 style={S.h3}>Layer Overview</h3>
-                <div style={{ overflowX: 'auto' }}>
-                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem' }}>
+                <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem', minWidth: 480 }}>
                     <thead>
                       <tr style={{ borderBottom: '2px solid var(--border)' }}>
                         <th style={{ padding: '10px 14px', textAlign: 'left', color: 'var(--text-primary)', fontWeight: 600 }}>Layer</th>
@@ -175,8 +193,8 @@ export default function DocsPage() {
             {activeSection === 'assets' && (
               <div>
                 <p style={S.p}>Meridex currently supports three tokens on Arc Testnet. All assets use the ERC-20 standard and are bridged or issued by Circle.</p>
-                <div style={{ overflowX: 'auto' }}>
-                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem' }}>
+                <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem', minWidth: 400 }}>
                     <thead>
                       <tr style={{ borderBottom: '2px solid var(--border)' }}>
                         {['Token', 'Full Name', 'Decimals', 'Contract Address', 'Notes'].map(h => (
@@ -260,8 +278,8 @@ export default function DocsPage() {
 
           </div>
 
-          {/* ── Docs nav — right side, fixed width ── */}
-          <div style={{ width: '160px', flexShrink: 0 }}>
+          {/* ── Docs nav — sadece desktop'ta sağda ── */}
+          <div className="hidden lg:block" style={{ width: '160px', flexShrink: 0 }}>
             <div className="rounded-xl overflow-hidden sticky top-4" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
               <p className="text-xs font-semibold px-3 pt-3 pb-2 uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Contents</p>
               <nav className="px-2 pb-2">
