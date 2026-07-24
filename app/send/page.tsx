@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect } from 'react'
 import { useAccount, useSwitchChain } from 'wagmi'
+import { useQueryClient } from '@tanstack/react-query'
 import { isAddress } from 'viem'
 import AppLayout from '@/app/components/AppLayout'
 import { arcTestnet, USDC_ADDRESS, EURC_ADDRESS, CIRBTC_ADDRESS } from '@/lib/arc'
@@ -21,6 +22,7 @@ const TOKENS = [
 export default function SendPage() {
   const { address, chainId } = useAccount()
   const { switchChain }      = useSwitchChain()
+  const queryClient          = useQueryClient()
 
   const [token,     setToken]     = useState(TOKENS[0])
   const [amount,    setAmount]    = useState('')
@@ -55,6 +57,8 @@ export default function SendPage() {
       const hash = (result as { txHash?: string })?.txHash ?? ''
       setTxHash(hash)
       await saveTransaction(address, recipient, parseFloat(amount), hash, 'send')
+      // Force-refresh all balances immediately after send
+      queryClient.invalidateQueries()
       setAmount(''); setRecipient('')
       setStatus('success')
       setToast({ message: 'Sent successfully!', type: 'success', txHash: hash })

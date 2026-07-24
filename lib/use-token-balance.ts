@@ -35,8 +35,8 @@ export function useArcTokenBalance(
     chainId: arcTestnet.id,
     query: {
       enabled: isNative && !!walletAddress,
-      staleTime: 30_000,
-      refetchInterval: 30_000,
+      staleTime: 0,
+      refetchInterval: 5_000,
     },
   })
 
@@ -49,8 +49,8 @@ export function useArcTokenBalance(
     chainId: arcTestnet.id,
     query: {
       enabled: !isNative && !!walletAddress,
-      staleTime: 30_000,
-      refetchInterval: 30_000,
+      staleTime: 0,
+      refetchInterval: 5_000,
     },
   })
 

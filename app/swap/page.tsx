@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react'
 import { useAccount, useSwitchChain } from 'wagmi'
+import { useQueryClient } from '@tanstack/react-query'
 import AppLayout from '@/app/components/AppLayout'
 import { arcTestnet, USDC_ADDRESS, EURC_ADDRESS, CIRBTC_ADDRESS } from '@/lib/arc'
 import { saveTransaction } from '@/lib/supabase'
@@ -90,6 +91,7 @@ function TokenDropdown({
 export default function SwapPage() {
   const { address, chainId } = useAccount()
   const { switchChain }      = useSwitchChain()
+  const queryClient          = useQueryClient()
 
   const [tokenIn,   setTokenIn]   = useState(TOKENS[0])
   const [tokenOut,  setTokenOut]  = useState(TOKENS[1])
@@ -156,6 +158,8 @@ export default function SwapPage() {
       const hash = (result as { txHash?: string })?.txHash ?? ''
       setTxHash(hash)
       await saveTransaction(address, address, parseFloat(amountIn), hash, 'swap')
+      // Force-refresh all balances immediately after swap
+      queryClient.invalidateQueries()
       setAmountIn(''); setEstimate(null)
       setStatus('success')
       setToast({ message: 'Swap successful!', type: 'success', txHash: hash })
