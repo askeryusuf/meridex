@@ -22,7 +22,7 @@ function formatDate(dateStr: string) {
 }
 
 type TxWithDir = Transaction & { direction: 'out' | 'in' }
-const PAGE_SIZE = 8
+const PAGE_SIZE = 5
 type TypeFilter = 'all' | 'send' | 'swap'
 
 function FilterChip<T extends string>({
@@ -195,7 +195,7 @@ export default function HistoryPage() {
         )}
 
         {/* Pagination */}
-        {filtered.length > PAGE_SIZE && (
+        {filtered.length > 0 && totalPages > 1 && (
           <div className="flex items-center justify-between mt-4">
             <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
               {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, filtered.length)} of {filtered.length}
