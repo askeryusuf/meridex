@@ -33,7 +33,7 @@ export default function SocialLinks() {
   ]
 
   return (
-    <div className="fixed bottom-[80px] lg:bottom-6 right-4 lg:right-6 z-30 flex flex-row gap-2">
+    <div className="fixed bottom-6 right-6 z-30 flex flex-row gap-2">
       {links.map((link) => (
         <a
           key={link.name}

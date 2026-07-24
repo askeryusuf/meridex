@@ -1,42 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
 import Sidebar from './Sidebar'
 import SocialLinks from './SocialLinks'
 
-const NAV_ITEMS = [
-  { href: '/portfolio', label: 'Portfolio', icon: (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
-    </svg>
-  )},
-  { href: '/swap', label: 'Swap', icon: (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-      <path d="M7 16V4m0 0L3 8m4-4l4 4"/><path d="M17 8v12m0 0l4-4m-4 4l-4-4"/>
-    </svg>
-  )},
-  { href: '/send', label: 'Send', icon: (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
-    </svg>
-  )},
-  { href: '/history', label: 'History', icon: (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
-    </svg>
-  )},
-  { href: '/docs', label: 'Docs', icon: (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
-    </svg>
-  )},
-]
-
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const pathname = usePathname()
 
   return (
     <div className="flex min-h-screen" style={{ background: 'var(--bg-base)', color: 'var(--text-primary)' }}>
@@ -103,38 +72,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       </div>
 
       {/* ── Main content ──────────────────────── */}
-      <main className="flex-1 min-w-0 px-4 sm:px-6 lg:px-8 pt-[72px] lg:pt-[88px] pb-24 lg:pb-8 overflow-y-auto">
+      <main className="flex-1 min-w-0 px-4 sm:px-6 lg:px-8 pt-[72px] lg:pt-[88px] pb-8 overflow-y-auto">
         {children}
       </main>
-
-      {/* ── Mobile bottom nav ─────────────────── */}
-      <nav
-        className="lg:hidden fixed bottom-0 left-0 right-0 z-50 flex items-center justify-around"
-        style={{
-          height: 64,
-          background: 'var(--bg-sidebar)',
-          borderTop: '1px solid var(--border)',
-        }}
-      >
-        {NAV_ITEMS.map(item => {
-          const isActive = pathname === item.href
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-all"
-              style={{ color: isActive ? 'var(--purple)' : 'var(--text-secondary)' }}
-            >
-              <span style={{ color: isActive ? 'var(--purple)' : 'var(--text-secondary)' }}>
-                {item.icon}
-              </span>
-              <span className="text-[10px] font-semibold" style={{ color: isActive ? 'var(--purple)' : 'var(--text-secondary)' }}>
-                {item.label}
-              </span>
-            </Link>
-          )
-        })}
-      </nav>
 
       <SocialLinks />
     </div>
