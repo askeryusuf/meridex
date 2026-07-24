@@ -57,6 +57,7 @@ export default function SendPage() {
       })
       const hash = (result as { txHash?: string })?.txHash ?? ''
       setTxHash(hash)
+      if (!hash) console.warn('[send] txHash is empty, saving without hash')
       await saveTransaction(address, recipient, parseFloat(amount), hash, 'send')
       // Force-refresh all balances immediately after send
       queryClient.invalidateQueries()

@@ -22,9 +22,17 @@ export async function saveTransaction(
   txHash: string,
   type: Transaction['type']
 ) {
-  await fetch('/api/save-transaction', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ sender, recipient, amount, txHash, type }),
-  })
+  try {
+    const res = await fetch('/api/save-transaction', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sender, recipient, amount, txHash, type }),
+    })
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}))
+      console.error('[saveTransaction] API error:', res.status, data)
+    }
+  } catch (err) {
+    console.error('[saveTransaction] fetch failed:', err)
+  }
 }

@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
   try {
     const { sender, recipient, amount, txHash, type } = await req.json()
 
-    if (!sender || !recipient || !amount || !txHash || !type) {
+    if (!sender || !recipient || !amount || !type) {
       return NextResponse.json({ error: 'Missing fields' }, { status: 400 })
     }
 
@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
       sender_address:    sender.toLowerCase(),
       recipient_address: recipient.toLowerCase(),
       amount:            numAmount,
-      tx_hash:           txHash,
+      tx_hash:           txHash ?? '',
       type:              type as TxType,
     })
 
