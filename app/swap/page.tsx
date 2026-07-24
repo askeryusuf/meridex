@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
 import { useAccount, useSwitchChain } from 'wagmi'
 import { useQueryClient } from '@tanstack/react-query'
+import { ConnectButton } from '@rainbow-me/rainbowkit'
 import AppLayout from '@/app/components/AppLayout'
 import { arcTestnet, USDC_ADDRESS, EURC_ADDRESS, CIRBTC_ADDRESS } from '@/lib/arc'
 import { saveTransaction } from '@/lib/supabase'
@@ -342,8 +343,8 @@ export default function SwapPage() {
           {/* Action button */}
           <div className="p-3">
             {!address ? (
-              <div className="text-center py-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
-                Connect your wallet to swap
+              <div className="flex justify-center py-1">
+                <ConnectButton label="Connect Wallet to Swap" />
               </div>
             ) : isWrongChain ? (
               <button onClick={() => switchChain({ chainId: arcTestnet.id })}

@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect } from 'react'
 import { useAccount, useSwitchChain } from 'wagmi'
 import { useQueryClient } from '@tanstack/react-query'
+import { ConnectButton } from '@rainbow-me/rainbowkit'
 import { isAddress } from 'viem'
 import AppLayout from '@/app/components/AppLayout'
 import { arcTestnet, USDC_ADDRESS, EURC_ADDRESS, CIRBTC_ADDRESS } from '@/lib/arc'
@@ -243,8 +244,8 @@ export default function SendPage() {
 
           {/* Action */}
           {!address ? (
-            <div className="text-center py-4 text-sm rounded-3xl" style={{ color: 'var(--text-secondary)', background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
-              Connect your wallet to send
+            <div className="flex justify-center py-2">
+              <ConnectButton label="Connect Wallet to Send" />
             </div>
           ) : isWrongChain ? (
             <button onClick={() => switchChain({ chainId: arcTestnet.id })}
