@@ -359,10 +359,10 @@ export default function SwapPage() {
                 className="w-full py-4 rounded-2xl font-bold text-sm transition-all disabled:cursor-not-allowed disabled:opacity-50"
                 style={{
                   background: (amountIn && parseFloat(amountIn) > 0)
-                    ? 'linear-gradient(135deg, #00C9B1, #00A896)'
+                    ? 'linear-gradient(135deg, #7B61FF, #6247E0)'
                     : 'var(--bg-input)',
                   color: (amountIn && parseFloat(amountIn) > 0) ? '#fff' : 'var(--text-secondary)',
-                  boxShadow: (amountIn && parseFloat(amountIn) > 0) ? '0 4px 20px rgba(0,201,177,0.3)' : 'none',
+                  boxShadow: (amountIn && parseFloat(amountIn) > 0) ? '0 4px 20px rgba(123,97,255,0.35)' : 'none',
                 }}
               >
                 {status === 'estimating' ? 'Getting quote…'
