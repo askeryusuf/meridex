@@ -12,11 +12,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
       {/* ── Mobile top header ──────────────────── */}
       <header
-        className="lg:hidden fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4"
+        className="lg:hidden fixed top-0 left-0 right-0 flex items-center justify-between px-4"
         style={{
           height: 56,
           background: 'var(--bg-sidebar)',
           borderBottom: '1px solid var(--border)',
+          zIndex: sidebarOpen ? 30 : 50,   // sidebar açıkken arkada kal
         }}
       >
         {/* Logo */}

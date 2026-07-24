@@ -105,7 +105,7 @@ export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
       </nav>
 
       {/* Wallet */}
-      <div className="p-4" style={{ borderTop: '1px solid var(--border)' }}>
+      <div className="sticky bottom-0 p-4" style={{ borderTop: '1px solid var(--border)', background: 'var(--bg-sidebar)' }}>
         <ConnectButton
           showBalance={false}
           chainStatus="icon"
