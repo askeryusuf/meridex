@@ -26,5 +26,14 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: sentErr?.message ?? recvErr?.message }, { status: 500 })
   }
 
-  return NextResponse.json({ sent: sent ?? [], received: received ?? [] })
+  // Swap kayıtlarında sender = recipient = kendi adresi olduğu için
+  // received sorgusundan swap'ları çıkar — aksi halde her swap 2x sayılır
+  const sentRows     = sent     ?? []
+  const receivedRows = (received ?? []).filter((t: { type: string }) => t.type !== 'swap')
+
+  // Kalan duplikeleri id bazında temizle (güvenlik katmanı)
+  const sentIds = new Set(sentRows.map((t: { id: string }) => t.id))
+  const dedupedReceived = receivedRows.filter((t: { id: string }) => !sentIds.has(t.id))
+
+  return NextResponse.json({ sent: sentRows, received: dedupedReceived })
 }
