@@ -5,16 +5,6 @@ import { useAccount } from 'wagmi'
 import AppLayout from '@/app/components/AppLayout'
 import { supabase, type Transaction } from '@/lib/supabase'
 
-const TYPE_LABELS: Record<string, string> = {
-  send: 'Send',
-  swap: 'Swap',
-}
-
-const TYPE_EMOJI: Record<string, string> = {
-  send: '💸',
-  swap: '⇄',
-}
-
 function timeAgo(dateStr: string) {
   const diff = Date.now() - new Date(dateStr).getTime()
   const mins = Math.floor(diff / 60000)
@@ -24,209 +14,254 @@ function timeAgo(dateStr: string) {
   if (hours < 24) return `${hours}h ago`
   const days = Math.floor(hours / 24)
   if (days < 30) return `${days}d ago`
-  const months = Math.floor(days / 30)
-  return `${months}mo ago`
+  return `${Math.floor(days / 30)}mo ago`
 }
 
 function formatDate(dateStr: string) {
-  const d = new Date(dateStr)
-  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: '2-digit' })
+  return new Date(dateStr).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: '2-digit' })
 }
 
 type TxWithDir = Transaction & { direction: 'out' | 'in' }
+const PAGE_SIZE = 8
 
-const PAGE_SIZE = 5
+type DirFilter  = 'all' | 'in' | 'out'
+type TypeFilter = 'all' | 'send' | 'swap'
+
+function FilterChip<T extends string>({
+  value, active, label, onClick,
+}: { value: T; active: boolean; label: string; onClick: (v: T) => void }) {
+  return (
+    <button
+      onClick={() => onClick(value)}
+      className="px-3 py-1.5 rounded-xl text-xs font-semibold transition-all"
+      style={{
+        background: active ? 'var(--purple)' : 'var(--bg-card)',
+        color: active ? '#fff' : 'var(--text-secondary)',
+        border: active ? '1px solid var(--purple)' : '1px solid var(--border)',
+      }}
+    >
+      {label}
+    </button>
+  )
+}
+
+function TxCard({ tx, index }: { tx: TxWithDir; index: number }) {
+  const isSend  = tx.direction === 'out'
+  const isSwap  = tx.type === 'swap'
+  const other   = isSend ? tx.recipient_address : tx.sender_address
+
+  const iconBg   = isSwap  ? 'rgba(123,97,255,0.12)' : isSend ? 'rgba(248,113,113,0.12)' : 'rgba(0,201,177,0.12)'
+  const iconColor = isSwap ? 'var(--purple)' : isSend ? 'var(--text-negative)' : 'var(--teal)'
+  const amtColor  = isSend ? 'var(--text-negative)' : 'var(--teal)'
+  const amtSign   = isSend ? '−' : '+'
+
+  return (
+    <div
+      className="flex items-center gap-4 p-4 rounded-2xl transition-all"
+      style={{
+        background: 'var(--bg-card)',
+        border: '1px solid var(--border)',
+        animationDelay: `${index * 40}ms`,
+      }}
+    >
+      {/* Icon */}
+      <div
+        className="w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0 text-base font-bold"
+        style={{ background: iconBg, color: iconColor }}
+      >
+        {isSwap ? '⇄' : isSend ? '↑' : '↓'}
+      </div>
+
+      {/* Info */}
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <span className="font-semibold text-sm" style={{ color: 'var(--text-primary)' }}>
+            {isSwap ? 'Swap' : isSend ? 'Sent' : 'Received'}
+          </span>
+          <span
+            className="text-xs px-2 py-0.5 rounded-lg font-semibold"
+            style={{
+              background: isSend ? 'rgba(248,113,113,0.08)' : 'rgba(0,201,177,0.08)',
+              color: isSend ? 'var(--text-negative)' : 'var(--teal)',
+            }}
+          >
+            {isSend ? 'OUT' : 'IN'}
+          </span>
+        </div>
+        <p className="text-xs font-mono mt-0.5 truncate" style={{ color: 'var(--text-secondary)' }}>
+          {other.slice(0, 10)}…{other.slice(-6)}
+        </p>
+      </div>
+
+      {/* Time */}
+      <div className="text-right flex-shrink-0 hidden sm:block">
+        <p className="text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>{timeAgo(tx.created_at)}</p>
+        <p className="text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>{formatDate(tx.created_at)}</p>
+      </div>
+
+      {/* Amount */}
+      <div className="text-right flex-shrink-0 min-w-[80px]">
+        <p className="font-bold text-sm tabular-nums" style={{ color: amtColor }}>
+          {amtSign}{tx.amount} {tx.type === 'swap' ? 'tkn' : 'USDC'}
+        </p>
+      </div>
+
+      {/* Explorer */}
+      <a
+        href={`https://testnet.arcscan.app/tx/${tx.tx_hash}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex-shrink-0 w-8 h-8 rounded-xl flex items-center justify-center transition-all"
+        style={{ background: 'var(--bg-input)', color: 'var(--text-secondary)' }}
+        title="View on ArcScan"
+      >
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+          <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+        </svg>
+      </a>
+    </div>
+  )
+}
 
 export default function HistoryPage() {
   const { address } = useAccount()
-  const [txs, setTxs] = useState<TxWithDir[]>([])
+  const [txs,     setTxs]     = useState<TxWithDir[]>([])
   const [loading, setLoading] = useState(false)
-  const [page, setPage] = useState(1)
-
-  // Filters
-  const [dirFilter, setDirFilter] = useState<'all' | 'in' | 'out'>('all')
-  const [typeFilter, setTypeFilter] = useState<'all' | 'send' | 'swap'>('all')
+  const [page,    setPage]    = useState(1)
+  const [dirFilter,  setDirFilter]  = useState<DirFilter>('all')
+  const [typeFilter, setTypeFilter] = useState<TypeFilter>('all')
 
   useEffect(() => {
     if (!address) return
     setLoading(true)
-
-    async function loadHistory() {
+    async function load() {
       const [{ data: sent }, { data: received }] = await Promise.all([
         supabase.from('transactions').select('*').eq('sender_address', address!.toLowerCase()).order('created_at', { ascending: false }),
         supabase.from('transactions').select('*').eq('recipient_address', address!.toLowerCase()).order('created_at', { ascending: false }),
       ])
-      const sentItems = (sent || []).map((t: Transaction) => ({ ...t, direction: 'out' as const }))
-      const receivedItems = (received || []).map((t: Transaction) => ({ ...t, direction: 'in' as const }))
-      const all = [...sentItems, ...receivedItems].sort(
-        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-      )
+      const all: TxWithDir[] = [
+        ...(sent     || []).map((t: Transaction) => ({ ...t, direction: 'out' as const })),
+        ...(received || []).map((t: Transaction) => ({ ...t, direction: 'in'  as const })),
+      ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
       setTxs(all)
       setLoading(false)
     }
-
-    loadHistory().catch(() => setLoading(false))
+    load().catch(() => setLoading(false))
   }, [address])
 
-  const filtered = useMemo(() => {
-    return txs.filter((tx) => {
-      if (dirFilter !== 'all' && tx.direction !== dirFilter) return false
-      if (typeFilter !== 'all' && tx.type !== typeFilter) return false
-      return true
-    })
-  }, [txs, dirFilter, typeFilter])
+  const filtered = useMemo(() => txs.filter(tx => {
+    if (dirFilter  !== 'all' && tx.direction !== dirFilter)  return false
+    if (typeFilter !== 'all' && tx.type      !== typeFilter) return false
+    return true
+  }), [txs, dirFilter, typeFilter])
 
   const totalPages = useMemo(() => Math.max(1, Math.ceil(filtered.length / PAGE_SIZE)), [filtered.length])
   const paginated  = useMemo(() => filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE), [filtered, page])
 
-  const handleDirFilter  = useCallback((val: typeof dirFilter)  => { setDirFilter(val);  setPage(1) }, [])
-  const handleTypeFilter = useCallback((val: typeof typeFilter) => { setTypeFilter(val); setPage(1) }, [])
+  const setDir  = useCallback((v: DirFilter)  => { setDirFilter(v);  setPage(1) }, [])
+  const setType = useCallback((v: TypeFilter) => { setTypeFilter(v); setPage(1) }, [])
+
+  // Stats
+  const totalSent     = useMemo(() => txs.filter(t => t.direction === 'out').length, [txs])
+  const totalReceived = useMemo(() => txs.filter(t => t.direction === 'in').length,  [txs])
+  const totalSwaps    = useMemo(() => txs.filter(t => t.type === 'swap').length,     [txs])
 
   return (
     <AppLayout>
       <div className="max-w-2xl mx-auto">
-        <div className="mb-4">
-          <div className="mb-3">
-            <h1 className="text-xl sm:text-2xl font-bold" style={{ color: 'var(--text-heading)' }}>Transaction History</h1>
-            <p style={{ color: 'var(--text-secondary)' }} className="text-xs sm:text-sm">All activities</p>
+
+        {/* Header */}
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold" style={{ color: 'var(--text-heading)' }}>History</h1>
+          <p className="text-xs mt-0.5" style={{ color: 'var(--text-secondary)' }}>
+            All on-chain activity for your wallet
+          </p>
+        </div>
+
+        {/* Stats row */}
+        {address && txs.length > 0 && (
+          <div className="grid grid-cols-3 gap-3 mb-5">
+            {[
+              { label: 'Total',    value: txs.length,     color: 'var(--purple)' },
+              { label: 'Sent',     value: totalSent,      color: 'var(--text-negative)' },
+              { label: 'Received', value: totalReceived,  color: 'var(--teal)' },
+            ].map(s => (
+              <div key={s.label} className="rounded-2xl p-4 text-center"
+                style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
+                <p className="text-2xl font-bold tabular-nums" style={{ color: s.color }}>{s.value}</p>
+                <p className="text-xs mt-1" style={{ color: 'var(--text-secondary)' }}>{s.label}</p>
+              </div>
+            ))}
           </div>
-          <div className="flex flex-col sm:flex-row gap-2">
-            {/* Direction filter */}
-            <select
-              value={dirFilter}
-              onChange={(e) => handleDirFilter(e.target.value as typeof dirFilter)}
-              className="text-sm rounded-lg px-3 py-2 focus:outline-none cursor-pointer flex-1 sm:flex-none"
-              style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
-            >
-              <option value="all">All</option>
-              <option value="in">Received</option>
-              <option value="out">Sent</option>
-            </select>
-            {/* Category filter */}
-            <select
-              value={typeFilter}
-              onChange={(e) => handleTypeFilter(e.target.value as typeof typeFilter)}
-              className="text-sm rounded-lg px-3 py-2 focus:outline-none cursor-pointer flex-1 sm:flex-none"
-              style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
-            >
-              <option value="all">All Categories</option>
-              <option value="send">💸 Send</option>
-              <option value="swap">⇄ Swap</option>
-            </select>
+        )}
+
+        {/* Filters */}
+        <div className="flex flex-wrap gap-2 mb-4">
+          <div className="flex gap-1.5">
+            <FilterChip value="all" active={dirFilter === 'all'} label="All"      onClick={setDir} />
+            <FilterChip value="in"  active={dirFilter === 'in'}  label="↓ In"     onClick={setDir} />
+            <FilterChip value="out" active={dirFilter === 'out'} label="↑ Out"    onClick={setDir} />
+          </div>
+          <div className="w-px self-stretch" style={{ background: 'var(--border)' }}/>
+          <div className="flex gap-1.5">
+            <FilterChip value="all"  active={typeFilter === 'all'}  label="All types" onClick={setType} />
+            <FilterChip value="send" active={typeFilter === 'send'} label="Send"      onClick={setType} />
+            <FilterChip value="swap" active={typeFilter === 'swap'} label="Swap"      onClick={setType} />
           </div>
         </div>
 
-        {/* Table */}
-        <div className="rounded-xl overflow-hidden" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
-          {!address ? (
-            <div className="p-8 text-center" style={{ color: 'var(--text-secondary)' }}>Connect your wallet</div>
-          ) : loading ? (
-            <div className="p-8 text-center animate-pulse" style={{ color: 'var(--text-secondary)' }}>Loading...</div>
-          ) : filtered.length === 0 ? (
-            <div className="p-8 text-center" style={{ color: 'var(--text-secondary)' }}>
-              {txs.length === 0 ? 'No transactions yet' : 'No transactions match this filter'}
-            </div>
-          ) : (
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="text-xs uppercase tracking-wide" style={{ borderBottom: '1px solid var(--border)', color: 'var(--text-secondary)' }}>
-                  <th className="px-6 py-3 text-left">Transaction</th>
-                  <th className="px-6 py-3 text-left">Time</th>
-                  <th className="px-6 py-3 text-right">Amount</th>
-                  <th className="px-6 py-3 text-right">Explorer</th>
-                </tr>
-              </thead>
-              <tbody style={{ borderColor: 'var(--border)' }}>
-                {paginated.map((tx, i) => {
-                  const isSend = tx.direction === 'out'
-                  const otherAddr = isSend ? tx.recipient_address : tx.sender_address
-                  return (
-                    <tr key={i} className="card-hover transition-colors"
-                        style={i < paginated.length - 1 ? { borderBottom: '1px solid var(--border)' } : undefined}>
-                      {/* Transaction column */}
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
-                          <div
-                            className="w-9 h-9 rounded-full flex items-center justify-center text-base flex-shrink-0"
-                            style={{ background: isSend ? 'rgba(255,107,138,0.15)' : 'rgba(0,201,177,0.15)' }}
-                          >
-                            {TYPE_EMOJI[tx.type] || (isSend ? '↑' : '↓')}
-                          </div>
-                          <div>
-                            <p className="text-white font-medium">
-                              {TYPE_LABELS[tx.type]}
-                            </p>
-                            <p className="text-xs font-mono mt-0.5" style={{ color: 'var(--text-secondary)' }}>
-                              {otherAddr.slice(0, 6)}...{otherAddr.slice(-4)}
-                            </p>
-                          </div>
-                        </div>
-                      </td>
-                      {/* Time column */}
-                      <td className="px-6 py-4">
-                        <p className="text-white font-bold text-sm">
-                          {timeAgo(tx.created_at)}
-                        </p>
-                        <p className="text-xs mt-0.5" style={{ color: 'var(--text-secondary)' }}>
-                          {formatDate(tx.created_at)}
-                        </p>
-                      </td>
-                      {/* Amount column */}
-                      <td className="px-6 py-4 text-right">
-                        <p className={`font-bold text-sm ${isSend ? 'text-negative' : 'text-positive'}`}
-                           style={{ color: isSend ? 'var(--text-negative)' : 'var(--text-positive)' }}>
-                          {isSend ? '−' : '+'}{tx.amount} {tx.type === 'swap' ? 'tokens' : 'USDC'}
-                        </p>
-                      </td>
-                      {/* Explorer column */}
-                      <td className="px-6 py-4 text-right">
-                        <a
-                          href={`https://testnet.arcscan.app/tx/${tx.tx_hash}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-xs hover:underline"
-                          style={{ color: 'var(--teal)' }}
-                        >
-                          Explorer ↗
-                        </a>
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          )}
-        </div>
+        {/* List */}
+        {!address ? (
+          <div className="rounded-3xl p-12 text-center" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
+            <div className="text-3xl mb-3">🔗</div>
+            <p className="font-semibold" style={{ color: 'var(--text-primary)' }}>Connect your wallet</p>
+            <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>to view your transaction history</p>
+          </div>
+        ) : loading ? (
+          <div className="space-y-3">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="h-16 rounded-2xl animate-pulse" style={{ background: 'var(--bg-card)' }} />
+            ))}
+          </div>
+        ) : filtered.length === 0 ? (
+          <div className="rounded-3xl p-12 text-center" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
+            <div className="text-3xl mb-3">{txs.length === 0 ? '📭' : '🔍'}</div>
+            <p className="font-semibold" style={{ color: 'var(--text-primary)' }}>
+              {txs.length === 0 ? 'No transactions yet' : 'No results'}
+            </p>
+            <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
+              {txs.length === 0 ? 'Your activity will appear here' : 'Try a different filter'}
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {paginated.map((tx, i) => <TxCard key={tx.id ?? i} tx={tx} index={i} />)}
+          </div>
+        )}
 
         {/* Pagination */}
-        {filtered.length > 0 && (
-          <div className="flex items-center justify-between mt-3">
+        {filtered.length > PAGE_SIZE && (
+          <div className="flex items-center justify-between mt-4">
             <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
-            {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, filtered.length)} / {filtered.length} transaction{filtered.length !== 1 ? 's' : ''}
-              {(dirFilter !== 'all' || typeFilter !== 'all') && ` (${txs.length} total)`}
+              {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, filtered.length)} of {filtered.length}
             </p>
-            <div className="flex items-center gap-2">
+            <div className="flex gap-2">
               <button
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                onClick={() => setPage(p => Math.max(1, p - 1))}
                 disabled={page === 1}
-                className="px-3 py-1.5 disabled:opacity-40 text-gray-300 text-xs rounded-lg transition-colors"
-                style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}
-                onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--bg-card-hover)')}
-                onMouseLeave={(e) => (e.currentTarget.style.background = 'var(--bg-card)')}
-              >
-                ← Previous
-              </button>
-              <span className="text-xs px-1" style={{ color: 'var(--text-secondary)' }}>{page} / {totalPages}</span>
+                className="px-4 py-2 rounded-xl text-xs font-semibold disabled:opacity-30 transition-all"
+                style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
+              >← Prev</button>
+              <span className="flex items-center px-3 text-xs" style={{ color: 'var(--text-secondary)' }}>
+                {page} / {totalPages}
+              </span>
               <button
-                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                 disabled={page === totalPages}
-                className="px-3 py-1.5 disabled:opacity-40 text-gray-300 text-xs rounded-lg transition-colors"
-                style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}
-                onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--bg-card-hover)')}
-                onMouseLeave={(e) => (e.currentTarget.style.background = 'var(--bg-card)')}
-              >
-                Next →
-              </button>
+                className="px-4 py-2 rounded-xl text-xs font-semibold disabled:opacity-30 transition-all"
+                style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
+              >Next →</button>
             </div>
           </div>
         )}
